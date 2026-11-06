@@ -5,6 +5,8 @@ Bethel Ekelechukwu
 
 int screen = 0;
 boolean gameOver = false;
+boolean paused = false;
+boolean menu = false;
 int score = 0;
 
 // My images
@@ -13,6 +15,8 @@ PImage snakeBg;
 PImage appleImage;
 PImage snakeHead;
 PImage snakeBody;
+PImage appleTest;
+PImage appleTest2;
 
 // integer for snake position
 int snakeHeadX = 200;
@@ -22,6 +26,7 @@ int snakeSize = 20;
 // integer for movement of the snake
 int direction = 0;
 int lastMoveTime = 0;
+int speed = 150;
 
 // integer for the food position
 int foodX = 200;
@@ -39,6 +44,8 @@ void setup () {
   appleImage = loadImage("apple.png");
   snakeHead = loadImage("snakehead.png");
   snakeBody = loadImage("snakebody.png");
+  appleTest = loadImage("appletest.png");
+  appleTest2 = loadImage("appletest2.png");
   snakeBodyX [0] = snakeHeadX;
   snakeBodyY [0] = snakeHeadY;
   // URL for background image in main menu: https://www.androidpolice.com/2019/09/24/chrome-snake-game-leak/
@@ -77,25 +84,24 @@ void draw () {
     // Snake image near title
     image(snakeImage, 150, 60, 70, 70);
     image(snakeImage, 480, 60, 70, 70);
-    
-    
   } else if (screen == 1) {
     background(30, 60, 30);
 
     // Game area
     fill(170, 220, 170);
-    rect(50, 50, 600, 350);
-
-    if (millis() - lastMoveTime > 150 && gameOver == false) {
+    rect(50, 50, 600, 350, 9);
+    if (millis() - lastMoveTime > speed && gameOver == false && paused == false) {
 
       for (int i = snakeLength - 1; i > 0; i--) {
         snakeBodyX[i] = snakeBodyX[i - 1];
         snakeBodyY[i] = snakeBodyY[i - 1];
       }
 
+
+
       snakeBodyX[0] = snakeHeadX;
       snakeBodyY[0] = snakeHeadY;
-      
+
       // Movement code
       if (direction == 1) {
         snakeHeadY -= 20;
@@ -123,7 +129,8 @@ void draw () {
       if (snakeHeadX == foodX && snakeHeadY == foodY) {
         snakeLength++;
         score++;
-        
+        speed -= 2;
+
         foodX = (int) random(3, 28) * 20 + 40;
         foodY = (int) random(3, 16) * 20 + 50;
       }
@@ -133,20 +140,37 @@ void draw () {
 
     // Food
     fill(255, 0, 0);
-    image(appleImage, foodX, foodY, 25, 25);
+    image(appleTest2, foodX, foodY, 30, 30);
+
+    // Pause button
+    fill(50, 130, 70);
+    rect(470, 10, 100, 30, 8);
+
+    fill(255);
+    textSize(16);
+    textAlign(CENTER);
+    text("PAUSE", 520, 31);
+
+    // Main Menu button
+    fill(50, 130, 70);
+    rect(365, 10, 100, 30, 8);
+
+    fill(255);
+    textSize(16);
+    text("MAIN MENU", 415, 31);
 
     fill(255);
     textSize(15);
     text("Snake: " + snakeHeadX + ", " + snakeHeadY, 100, 30);
-    text("Food: " + foodX + ", " + foodY, 300, 30);
-    
+    text("Food: " + foodX + ", " + foodY, 200, 30);
+
     // displaying the score
     fill(255);
     textSize(20);
-    text("Score: " + score, 600, 30);
+    text("Score: " + score, 650, 30);
 
     // Snake
-    image(snakeHead, snakeHeadX, snakeHeadY, snakeSize, snakeSize);
+    image(snakeBody, snakeHeadX, snakeHeadY, snakeSize, snakeSize);
     fill(30, 150, 50);
     for (int i = 0; i < snakeLength; i++) {
       rect(snakeBodyX[i], snakeBodyY[i], snakeSize, snakeSize);
@@ -165,29 +189,34 @@ void draw () {
       fill(255);
       textSize(22);
       text("RESTART", 350, 275);
-      
+
       score = 0;
+      speed = 150;
     }
   } else if (screen == 2) {
     background(30, 60, 30);
 
+    // second screen background
+    fill(170, 220, 170);
+    rect(55, 0, 600, 500);
+
     // Controls title
-    fill(255);
+    fill(20);
     textAlign(CENTER);
     textSize(40);
-    text("CONTROLS", 350, 80);
+    text("CONTROLS", 350, 60);
 
     // Movement instructions
     textSize(22);
-    text("Use the arrow keys to move the snake", 350, 160);
-    text("UP / W - Move up", 350, 200);
-    text("DOWN / S - Move down", 350, 250);
-    text("LEFT / A - Move left", 350, 300);
-    text("RIGHT / D - Move right", 350, 350);
+    text("Use the arrow keys to move the snake", 350, 120);
+    text("UP / W - Move up", 350, 160);
+    text("DOWN / S - Move down", 350, 205);
+    text("LEFT / A - Move left", 350, 250);
+    text("RIGHT / D - Move right", 350, 300);
 
     textSize(16);
-    fill(200);
-    text("Avoid hitting the walls and yourself!", 350, 370);
+    fill(20);
+    text("Avoid hitting the walls and yourself!", 350, 350);
 
     // Back to Menu button
     fill(50, 130, 70);
@@ -201,10 +230,42 @@ void draw () {
 
 void mousePressed () {
 
+  // Pause button
+  if (screen == 1 && gameOver == false &&
+    mouseX > 470 && mouseX < 570 &&
+    mouseY > 10 && mouseY < 40) {
+    paused = !paused;
+  }
+
+  // Main Menu button
+  if (screen == 1 &&
+    mouseX > 365 && mouseX < 465 &&
+    mouseY > 10 && mouseY < 40) {
+    screen = 0;
+    paused = false;
+  }
+
   // border radius for the main game
   if (mouseX > 250 && mouseX < 450 &&
     mouseY > 230 && mouseY < 295) {
     screen = 1;
+
+    // Resets the game
+    snakeHeadX = 200;
+    snakeHeadY = 230;
+    snakeLength = 1;
+    direction = 0;
+    score = 0;
+    speed = 150;
+    gameOver = false;
+
+    snakeBodyX[0] = snakeHeadX;
+    snakeBodyY[0] = snakeHeadY;
+
+    foodX = 200;
+    foodY = 150;
+
+    lastMoveTime = millis ();
   }
 
   // border radius for the direction menu
@@ -249,6 +310,10 @@ void keyPressed () {
     direction = 3;
   } else if (keyCode == RIGHT || keyCode == 'D') {
     direction = 4;
+  }
+
+  if (keyCode == 'P' || keyCode == 'p') {
+    paused = !paused;
   }
 }
 
