@@ -315,6 +315,24 @@ void keyPressed () {
   if (keyCode == 'P' || keyCode == 'p') {
     paused = !paused;
   }
+
+  if (keyCode == 'M' || keyCode == 'm') {
+    screen = 0;
+  }
+
+  if (keyCode == 'R' || keyCode == 'r') {
+    snakeHeadX = 200;
+    foodX = 200;
+    foodY = 150;
+    snakeHeadY = 230;
+    snakeLength = 1;
+    direction = 0;
+    gameOver = false;
+    lastMoveTime = millis ();
+
+    snakeBodyX[0] = snakeHeadX;
+    snakeBodyY[0] = snakeHeadY;
+  }
 }
 
 // URL for background image in main menu: https://www.androidpolice.com/2019/09/24/chrome-snake-game-leak/
