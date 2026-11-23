@@ -10,6 +10,9 @@ SoundFile moveSound;
 SoundFile eatSound;
 // https://downloads.khinsider.com/game-soundtracks/album/google-snake-online-gamerip-2017/game_audio.7%2520EAT.mp3
 
+SoundFile gameOverSound;
+// https://downloads.khinsider.com/game-soundtracks/album/google-snake-online-gamerip-2017/end_audio%2520DEATH.mp3
+
 
 int screen = 0;
 boolean gameOver = false;
@@ -18,7 +21,6 @@ boolean menu = false;
 
 int score = 0;
 int highScore = 0;
-int finalScore = 0;
 
 // My images
 PImage snakeImage;
@@ -71,6 +73,7 @@ void setup () {
   // Sound for eating and moving
   moveSound = new SoundFile(this, "move.mp3");
   eatSound = new SoundFile(this, "crunch.mp3");
+  gameOverSound = new SoundFile(this, "gameOver.mp3");
 
   // URL for background image in main menu: https://www.androidpolice.com/2019/09/24/chrome-snake-game-leak/
 }
@@ -112,19 +115,7 @@ void draw () {
     background(30, 60, 30);
 
     // Game area (checkred background)
-    for (int x = 50; x < 650; x = x + 20) {
-
-      for (int y = 50; y < 400; y = y + 20) {
-
-        if ((x / 20 + y / 20) % 2 == 0) {
-          fill(170, 220, 170);
-        } else {
-          fill(145, 200, 145);
-        }
-
-        rect(x, y, 20, 20);
-      }
-    }
+    rect(30, 50, 650, 380);
 
     if (millis() - lastMoveTime > speed && gameOver == false && paused == false) {
 
@@ -157,12 +148,14 @@ void draw () {
       if (snakeHeadX < 50 || snakeHeadX >= 650 ||
         snakeHeadY < 50 || snakeHeadY >= 400) {
         gameOver = true;
+        gameOverSound.play();
       }
 
       for (int i = 1; i < snakeLength; i++) {
         if (snakeHeadX == snakeBodyX[i] &&
           snakeHeadY == snakeBodyY[i]) {
           gameOver = true;
+          gameOverSound.play();
         }
       }
 
@@ -228,10 +221,12 @@ void draw () {
 
       if (score > highScore) {
         highScore = score;
-        
+
         JSONObject savedData = new JSONObject();
         savedData.setInt("highScore", highScore);
         saveJSONObject(savedData, "highscore.json");
+
+        gameOverSound.play();
       }
 
       // Transparent grey background
@@ -243,10 +238,10 @@ void draw () {
       textAlign(CENTER);
       textSize(45);
       text("GAME OVER", 350, 200);
-      
+
       textSize(22);
       fill(255);
-      text("Your Score: " + finalScore, 350, 375);
+      text("Your Score: " + score, 350, 375);
 
       textSize(22);
       fill(255);
@@ -259,10 +254,6 @@ void draw () {
       fill(255);
       textSize(22);
       text("RESTART", 350, 275);
-
-      finalScore = score;
-      score = 0;
-      speed = 150;
     }
 
     // PAUSE SCREEN
@@ -389,6 +380,9 @@ void mousePressed () {
 
     snakeBodyX[0] = snakeHeadX;
     snakeBodyY[0] = snakeHeadY;
+
+    score = 0;
+    speed = 150;
   }
 
   if (screen == 1 && paused == true &&
@@ -421,7 +415,7 @@ void keyPressed () {
   }
 
   // Paused function
-  if (keyCode == 'P' || keyCode == 'p') {
+  if (screen == 1 && keyCode == 'P' || keyCode == 'p') {
     paused = !paused;
   }
 
