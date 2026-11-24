@@ -1,20 +1,19 @@
+
 /*
 Bethel Ekelechukwu
- TODO: Make the game
+ Snake Game
  */
+
 import processing.sound.*;
 
 SoundFile moveSound;
-// https://downloads.khinsider.com/game-soundtracks/album/google-snake-online-gamerip-2017/game_audio.7%2520UP.mp3
-
 SoundFile eatSound;
-// https://downloads.khinsider.com/game-soundtracks/album/google-snake-online-gamerip-2017/game_audio.7%2520EAT.mp3
-
 SoundFile gameOverSound;
-// https://downloads.khinsider.com/game-soundtracks/album/google-snake-online-gamerip-2017/end_audio%2520DEATH.mp3
 
-
+// Controls which screen is displayed
+// 0 = Main Menu, 1 = Game, 2 = Controls
 int screen = 0;
+
 boolean gameOver = false;
 boolean paused = false;
 boolean menu = false;
@@ -22,7 +21,7 @@ boolean menu = false;
 int score = 0;
 int highScore = 0;
 
-// My images
+// Images used in the game
 PImage snakeImage;
 PImage snakeBg;
 PImage appleImage;
@@ -31,72 +30,71 @@ PImage snakeBody;
 PImage appleTest;
 PImage appleTest2;
 
-// integer for snake position
-int snakeHeadX = 200;
+// Snake's starting position and size
+int snakeHeadX = 210;
 int snakeHeadY = 250;
 int snakeSize = 20;
 
-// integer for movement of the snake
+// Controls how the snake moves
+// 0 = Not moving, 1 = Up, 2 = Down, 3 = Left, 4 = Right
 int direction = 0;
 int lastMoveTime = 0;
 int speed = 150;
 
-// integer for the food position
-int foodX = 200;
+// Apple's starting position
+int foodX = 210;
 int foodY = 150;
 
-// integer for the maximum snake length (100)
+// Arrays store the X and Y positions of each snake body section
 int[] snakeBodyX = new int[100];
 int[] snakeBodyY = new int[100];
 
-// snake tail
+// Keeps track of how many sections the snake has
 int snakeLength = 1;
 
 void setup () {
   size(700, 450);
 
+  // Loads the saved high score from a JSON file
   JSONObject savedData = loadJSONObject("highscore.json");
 
   if (savedData != null) {
     highScore = savedData.getInt("highScore");
   }
 
+  // Loads the images used in the game
   snakeImage = loadImage("snakeimage.png");
   snakeBg = loadImage("snakebg.png");
   snakeHead = loadImage("snakehead.png");
   snakeBody = loadImage("snakebody.png");
   appleTest2 = loadImage("appletest2.png");
 
+  // Sets the first body section to the snake's starting position
   snakeBodyX [0] = snakeHeadX;
   snakeBodyY [0] = snakeHeadY;
 
-  // Sound for eating and moving
+  // Loads the sound effects
   moveSound = new SoundFile(this, "move.mp3");
   eatSound = new SoundFile(this, "crunch.mp3");
   gameOverSound = new SoundFile(this, "gameOver.mp3");
-
-  // URL for background image in main menu: https://www.androidpolice.com/2019/09/24/chrome-snake-game-leak/
 }
 
 void draw () {
-  // MENU
+
+  // Displays the main menu
   if (screen == 0) {
     image(snakeBg, 0, 0, 700, 450);
 
-    // Title
     textAlign(CENTER);
     textSize(45);
     text("Snake Game", 350, 100);
 
-    // Subtitle
     textSize(18);
     text("Eat. Grow. Survive.", 350, 130);
 
-    // Start button
     fill(30, 180, 70);
     rect(250, 230, 200, 65, 15);
 
-    // Controls button
     fill(50, 130, 70);
     rect(250, 320, 200, 55, 15);
 
@@ -108,28 +106,45 @@ void draw () {
     textSize(25);
     text("Start Game", 350, 270);
 
-    // Snake image near title
     image(snakeImage, 150, 60, 70, 70);
     image(snakeImage, 480, 60, 70, 70);
   } else if (screen == 1) {
+
     background(30, 60, 30);
 
-    // Game area (checkred background)
-    rect(30, 50, 650, 380);
 
+    // Grid background
+    rect(50, 50, 600, 340);
+    stroke(0, 0, 0);
+
+    // Draws the vertical grid lines
+    for (int x = 50; x <= 650; x += 20) {
+      line(x, 50, x, 390);
+    }
+
+    // Draws the horizontal grid lines
+    for (int y = 50; y <= 390; y += 20) {
+      line(50, y, 650, y);
+    }
+
+    noStroke();
+
+    // millis() checks how much time has passed
+    // The snake only moves when enough time has passed and the game isn't paused or over
     if (millis() - lastMoveTime > speed && gameOver == false && paused == false) {
 
+      // Moves each body section to the position of the section in front of it
+      // This makes the snake's body follow its head
       for (int i = snakeLength - 1; i > 0; i--) {
         snakeBodyX[i] = snakeBodyX[i - 1];
         snakeBodyY[i] = snakeBodyY[i - 1];
       }
 
-
-
+      // Saves the head's previous position as the first body section
       snakeBodyX[0] = snakeHeadX;
       snakeBodyY[0] = snakeHeadY;
 
-      // Movement code
+      // Direction 1 = Up, Direction 2 = Down, Direction 3 = Left, Direction 4 = Right
       if (direction == 1) {
         snakeHeadY -= 20;
         moveSound.play();
@@ -144,13 +159,14 @@ void draw () {
         moveSound.play();
       }
 
-
+      // Checks if the snake has hit the walls
       if (snakeHeadX < 50 || snakeHeadX >= 650 ||
         snakeHeadY < 50 || snakeHeadY >= 400) {
         gameOver = true;
         gameOverSound.play();
       }
 
+      // Checks if the snake has collided with its own body
       for (int i = 1; i < snakeLength; i++) {
         if (snakeHeadX == snakeBodyX[i] &&
           snakeHeadY == snakeBodyY[i]) {
@@ -159,26 +175,28 @@ void draw () {
         }
       }
 
+      // Checks if the snake's head is touching the apple
       if (snakeHeadX == foodX && snakeHeadY == foodY) {
 
         eatSound.play();
 
-
+        // Makes the snake longer, increases the score and increases its speed
         snakeLength++;
         score++;
         speed -= 2;
 
-        foodX = (int) random(3, 28) * 20 + 40;
-        foodY = (int) random(3, 16) * 20 + 50;
+        // Generates a new apple at a random position on the grid
+        foodX = (int) random(0, 30) * 20 + 50;
+        foodY = (int) random(0, 17) * 20 + 50;
       }
 
-
+      // Resets the movement timer
       lastMoveTime = millis();
     }
 
-    // Food
+    // Draws the apple
     fill(255, 0, 0);
-    image(appleTest2, foodX, foodY, 30, 30);
+    image(appleTest2, foodX, foodY, 20, 20);
 
     // Pause button
     fill(50, 130, 70);
@@ -197,31 +215,36 @@ void draw () {
     textSize(16);
     text("MAIN MENU", 415, 31);
 
+
+    // Snakes coordinates
     fill(255);
     textSize(15);
     text("Snake: " + snakeHeadX + ", " + snakeHeadY, 100, 30);
     text("Food: " + foodX + ", " + foodY, 200, 30);
 
-    // displaying the score
+    // Displays the player's score
     fill(255);
     textSize(20);
     text("Score: " + score, 650, 30);
     image(appleTest2, 590, 7, 35, 35);
 
-    // Snake
+    // Draws the snake's head and body
     image(snakeBody, snakeHeadX, snakeHeadY, snakeSize, snakeSize);
     fill(30, 150, 50);
+
     for (int i = 0; i < snakeLength; i++) {
       rect(snakeBodyX[i], snakeBodyY[i], snakeSize, snakeSize);
       image(snakeBody, snakeBodyX[i], snakeBodyY[i], snakeSize, snakeSize);
     }
 
-
+    // Displays the Game Over screen when the snake loses
     if (gameOver == true) {
 
+      // Checks if the player achieved a new high score
       if (score > highScore) {
         highScore = score;
 
+        // Saves the new high score in a JSON file
         JSONObject savedData = new JSONObject();
         savedData.setInt("highScore", highScore);
         saveJSONObject(savedData, "highscore.json");
@@ -229,10 +252,11 @@ void draw () {
         gameOverSound.play();
       }
 
+      // GAME OVER BACKGROUND
+
       // Transparent grey background
       fill(50, 50, 50, 150);
       rect(0, 0, 700, 450);
-
 
       fill(255, 0, 0);
       textAlign(CENTER);
@@ -256,13 +280,12 @@ void draw () {
       text("RESTART", 350, 275);
     }
 
-    // PAUSE SCREEN
+    // Displays the pause overlay when the game is paused
     if (paused == true) {
 
       fill(100, 100, 100, 180);
       rect(0, 0, 700, 450);
 
-      // Paused text
       fill(255);
       textAlign(CENTER);
       textSize(45);
@@ -277,19 +300,18 @@ void draw () {
       text("HOME", 610, 412);
     }
   } else if (screen == 2) {
+
+    // Displays the controls screen
     background(30, 60, 30);
 
-    // second screen background
     fill(170, 220, 170);
     rect(55, 0, 600, 500);
 
-    // Controls title
     fill(20);
     textAlign(CENTER);
     textSize(40);
     text("CONTROLS", 350, 60);
 
-    // Movement instructions
     textSize(22);
     text("Use the arrow keys to move the snake", 350, 120);
     text("UP / W - Move up", 350, 160);
@@ -313,28 +335,23 @@ void draw () {
 
 void mousePressed () {
 
-  // Pause button
-  if (screen == 1 && gameOver == false &&
-    mouseX > 470 && mouseX < 570 &&
-    mouseY > 10 && mouseY < 40) {
+  // Checks if the player clicked the Pause button
+  if (screen == 1 && gameOver == false && mouseX > 470 && mouseX < 570 && mouseY > 10 && mouseY < 40) {
     paused = !paused;
   }
 
-  // Main Menu button
-  if (screen == 1 &&
-    mouseX > 365 && mouseX < 465 &&
-    mouseY > 10 && mouseY < 40) {
+  // Returns to the main menu when clicked
+  if (screen == 1 && mouseX > 365 && mouseX < 465 && mouseY > 10 && mouseY < 40) {
     screen = 0;
     paused = false;
   }
 
-  // border radius for the main game
-  if (mouseX > 250 && mouseX < 450 &&
-    mouseY > 230 && mouseY < 295) {
+  // Checks if the player clicked the Start Game button
+  if (mouseX > 250 && mouseX < 450 && mouseY > 230 && mouseY < 295) {
     screen = 1;
 
-    // Resets the game
-    snakeHeadX = 200;
+    // Resets the game variables for a new game
+    snakeHeadX = 210;
     snakeHeadY = 250;
     snakeLength = 1;
     direction = 0;
@@ -345,31 +362,27 @@ void mousePressed () {
     snakeBodyX[0] = snakeHeadX;
     snakeBodyY[0] = snakeHeadY;
 
-    foodX = 200;
+    foodX = 210;
     foodY = 150;
 
     lastMoveTime = millis ();
   }
 
-  // border radius for the direction menu
-  if (mouseX > 250 && mouseX < 450 &&
-    mouseY > 320 && mouseY < 375) {
+  // Checks if player clicks the "CONTROLS" menu in the main menu
+  // Opens the controls screen
+  if (screen == 0 && mouseX > 250 && mouseX < 450 && mouseY > 320 && mouseY < 375) {
     screen = 2;
   }
 
-  // Back to Menu button
-  if (screen == 2 &&
-    mouseX > 250 && mouseX < 450 &&
-    mouseY > 375 && mouseY < 425) {
+  // Returns from the controls screen to the menu
+  if (screen == 2 && mouseX > 250 && mouseX < 450 && mouseY > 375 && mouseY < 425) {
     screen = 0;
   }
 
-  // Restart button
-  if (gameOver == true &&
-    mouseX > 250 && mouseX < 450 &&
-    mouseY > 240 && mouseY < 295) {
+  // Restarts the game when the Restart button is clicked
+  if (gameOver == true && mouseX > 250 && mouseX < 450 && mouseY > 240 && mouseY < 295) {
 
-    snakeHeadX = 200;
+    snakeHeadX = 210;
     foodX = 200;
     foodY = 150;
     snakeHeadY = 250;
@@ -385,17 +398,18 @@ void mousePressed () {
     speed = 150;
   }
 
-  if (screen == 1 && paused == true &&
-    mouseX > 550 && mouseX < 670 &&
-    mouseY > 380 && mouseY < 430) {
+  // Returns to the menu using the Home button while paused
+  if (screen == 1 && paused == true && mouseX > 550 && mouseX < 670 && mouseY > 380 && mouseY < 430) {
 
     screen = 0;
     paused = false;
   }
 }
 
-
 void keyPressed () {
+
+  // Changes direction using arrow keys or WASD
+  // Prevents the snake from immediately reversing into itself
   if (keyCode == UP || key == 'w' || key == 'W') {
     if (direction != 2) {
       direction = 1;
@@ -414,19 +428,19 @@ void keyPressed () {
     }
   }
 
-  // Paused function
+  // Press P to pause or resume the game
   if (screen == 1 && keyCode == 'P' || keyCode == 'p') {
     paused = !paused;
   }
 
-  // Press M to go to menu
+  // Press M to return to the main menu
   if (keyCode == 'M' || keyCode == 'm') {
     screen = 0;
   }
 
-  // Press R to restart
+  // Press R to restart the game
   if (keyCode == 'R' || keyCode == 'r') {
-    snakeHeadX = 200;
+    snakeHeadX = 210;
     foodX = 200;
     foodY = 150;
     snakeHeadY = 250;
@@ -440,5 +454,6 @@ void keyPressed () {
   }
 }
 
-// URL for background image in main menu: https://www.androidpolice.com/2019/09/24/chrome-snake-game-leak/
-// URL for apple in game: https://pngtree.com/freepng/fresh-apple-fruit-red_13344485.html
+// Image sources:
+// Background: https://www.androidpolice.com/2019/09/24/chrome-snake-game-leak/
+// Apple: https://pngtree.com/freepng/fresh-apple-fruit-red_13344485.html
