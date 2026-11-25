@@ -4,6 +4,7 @@ Bethel Ekelechukwu
  Snake Game
  */
 
+
 import processing.sound.*;
 
 SoundFile moveSound;
@@ -16,7 +17,6 @@ int screen = 0;
 
 boolean gameOver = false;
 boolean paused = false;
-boolean menu = false;
 
 int score = 0;
 int highScore = 0;
@@ -24,10 +24,7 @@ int highScore = 0;
 // Images used in the game
 PImage snakeImage;
 PImage snakeBg;
-PImage appleImage;
-PImage snakeHead;
 PImage snakeBody;
-PImage appleTest;
 PImage appleTest2;
 
 // Snake's starting position and size
@@ -55,23 +52,22 @@ int snakeLength = 1;
 void setup () {
   size(700, 450);
 
-  // Loads the saved high score from a JSON file
-  JSONObject savedData = loadJSONObject("highscore.json");
+  JSONObject loadedScore = loadJSONObject(dataPath("highscore.json"));
 
-  if (savedData != null) {
-    highScore = savedData.getInt("highScore");
+  if (loadedScore != null) {
+    highScore = loadedScore.getInt("highScore");
   }
 
-  // Loads the images used in the game-
+
+  // Loads the images used in the game
   snakeImage = loadImage("snakeimage.png");
   snakeBg = loadImage("snakebg.png");
-  snakeHead = loadImage("snakehead.png");
   snakeBody = loadImage("snakebody.png");
   appleTest2 = loadImage("appletest2.png");
 
-  // Sets the first body section to the snake's starting position
-  snakeBodyX [0] = snakeHeadX;
-  snakeBodyY [0] = snakeHeadY;
+  // Sets the first body section
+  snakeBodyX[0] = snakeHeadX;
+  snakeBodyY[0] = snakeHeadY;
 
   // Loads the sound effects
   moveSound = new SoundFile(this, "move.mp3");
@@ -160,16 +156,14 @@ void draw () {
       }
 
       // Checks if the snake has hit the walls
-      if (snakeHeadX < 50 || snakeHeadX >= 650 ||
-        snakeHeadY < 50 || snakeHeadY >= 400) {
+      if (snakeHeadX < 50 || snakeHeadX >= 650 || snakeHeadY < 50 || snakeHeadY >= 390) {
         gameOver = true;
         gameOverSound.play();
       }
 
       // Checks if the snake has collided with its own body
       for (int i = 1; i < snakeLength; i++) {
-        if (snakeHeadX == snakeBodyX[i] &&
-          snakeHeadY == snakeBodyY[i]) {
+        if (snakeHeadX == snakeBodyX[i] && snakeHeadY == snakeBodyY[i]) {
           gameOver = true;
           gameOverSound.play();
         }
@@ -182,6 +176,11 @@ void draw () {
 
         // Makes the snake longer, increases the score and increases its speed
         snakeLength++;
+
+        // Gives the new body section the previous tail position
+        snakeBodyX[snakeLength - 1] = snakeBodyX[snakeLength - 2];
+        snakeBodyY[snakeLength - 1] = snakeBodyY[snakeLength - 2];
+
         score++;
         speed -= 2;
 
@@ -244,10 +243,12 @@ void draw () {
       if (score > highScore) {
         highScore = score;
 
-        // Saves the new high score in a JSON file
-        JSONObject savedData = new JSONObject();
-        savedData.setInt("highScore", highScore);
-        saveJSONObject(savedData, "highscore.json");
+        // Once game is over and you have a new high score it will save into a JSON file
+        JSONObject savedScore = new JSONObject();
+        savedScore.setInt("highScore", highScore);
+
+        saveJSONObject(savedScore, dataPath("highscore.json"));
+
 
         gameOverSound.play();
       }
@@ -347,7 +348,7 @@ void mousePressed () {
   }
 
   // Checks if the player clicked the Start Game button
-  if (mouseX > 250 && mouseX < 450 && mouseY > 230 && mouseY < 295) {
+  if (screen == 0 && mouseX > 250 && mouseX < 450 && mouseY > 230 && mouseY < 295) {
     screen = 1;
 
     // Resets the game variables for a new game
@@ -383,7 +384,7 @@ void mousePressed () {
   if (gameOver == true && mouseX > 250 && mouseX < 450 && mouseY > 240 && mouseY < 295) {
 
     snakeHeadX = 210;
-    foodX = 200;
+    foodX = 210;
     foodY = 150;
     snakeHeadY = 250;
     snakeLength = 1;
@@ -429,7 +430,7 @@ void keyPressed () {
   }
 
   // Press P to pause or resume the game
-  if (screen == 1 && keyCode == 'P' || keyCode == 'p') {
+  if (screen == 1 && !gameOver && (key == 'p' || key == 'P')) {
     paused = !paused;
   }
 
@@ -439,9 +440,9 @@ void keyPressed () {
   }
 
   // Press R to restart the game
-  if (keyCode == 'R' || keyCode == 'r') {
+  if (screen == 1 && gameOver && (keyCode == 'R' || keyCode == 'r')) {
     snakeHeadX = 210;
-    foodX = 200;
+    foodX = 210;
     foodY = 150;
     snakeHeadY = 250;
     snakeLength = 1;
