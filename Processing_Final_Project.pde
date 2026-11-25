@@ -62,7 +62,7 @@ void setup () {
     highScore = savedData.getInt("highScore");
   }
 
-  // Loads the images used in the game
+  // Loads the images used in the game-
   snakeImage = loadImage("snakeimage.png");
   snakeBg = loadImage("snakebg.png");
   snakeHead = loadImage("snakehead.png");
