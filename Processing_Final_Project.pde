@@ -39,8 +39,8 @@ int lastMoveTime = 0;
 int speed = 150;
 
 // Apple's starting position
-int foodX = 210;
-int foodY = 150;
+int appleX = 210;
+int appleY = 150;
 
 // Arrays store the X and Y positions of each snake body section
 int[] snakeBodyX = new int[100];
@@ -170,7 +170,7 @@ void draw () {
       }
 
       // Checks if the snake's head is touching the apple
-      if (snakeHeadX == foodX && snakeHeadY == foodY) {
+      if (snakeHeadX == appleX && snakeHeadY == appleY) {
 
         eatSound.play();
 
@@ -185,8 +185,8 @@ void draw () {
         speed -= 2;
 
         // Generates a new apple at a random position on the grid
-        foodX = (int) random(0, 30) * 20 + 50;
-        foodY = (int) random(0, 17) * 20 + 50;
+        appleX = (int) random(0, 30) * 20 + 50;
+        appleY = (int) random(0, 17) * 20 + 50;
       }
 
       // Resets the movement timer
@@ -195,7 +195,7 @@ void draw () {
 
     // Draws the apple
     fill(255, 0, 0);
-    image(appleTest2, foodX, foodY, 20, 20);
+    image(appleTest2, appleX, appleY, 20, 20);
 
     // Pause button
     fill(50, 130, 70);
@@ -219,7 +219,7 @@ void draw () {
     fill(255);
     textSize(15);
     text("Snake: " + snakeHeadX + ", " + snakeHeadY, 100, 30);
-    text("Food: " + foodX + ", " + foodY, 200, 30);
+    text("Food: " + appleX + ", " + appleY, 200, 30);
 
     // Displays the player's score
     fill(255);
@@ -363,8 +363,8 @@ void mousePressed () {
     snakeBodyX[0] = snakeHeadX;
     snakeBodyY[0] = snakeHeadY;
 
-    foodX = 210;
-    foodY = 150;
+    appleX = 210;
+    appleY = 150;
 
     lastMoveTime = millis ();
   }
@@ -384,8 +384,8 @@ void mousePressed () {
   if (gameOver == true && mouseX > 250 && mouseX < 450 && mouseY > 240 && mouseY < 295) {
 
     snakeHeadX = 210;
-    foodX = 210;
-    foodY = 150;
+    appleX = 210;
+    appleY = 150;
     snakeHeadY = 250;
     snakeLength = 1;
     direction = 0;
@@ -442,8 +442,8 @@ void keyPressed () {
   // Press R to restart the game
   if (screen == 1 && gameOver && (keyCode == 'R' || keyCode == 'r')) {
     snakeHeadX = 210;
-    foodX = 210;
-    foodY = 150;
+    appleX = 210;
+    appleY = 150;
     snakeHeadY = 250;
     snakeLength = 1;
     direction = 0;
