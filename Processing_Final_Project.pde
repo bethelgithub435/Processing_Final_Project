@@ -243,12 +243,10 @@ void draw () {
       if (score > highScore) {
         highScore = score;
 
-        // Once game is over and you have a new high score it will save into a JSON file
-        JSONObject savedScore = new JSONObject();
-        savedScore.setInt("highScore", highScore);
-
-        saveJSONObject(savedScore, dataPath("highscore.json"));
-
+        // Saves the new high score in a JSON file
+        JSONObject savedData = new JSONObject();
+        savedData.setInt("highScore", highScore);
+        saveJSONObject(savedData, "highscore.json");
 
         gameOverSound.play();
       }
@@ -384,8 +382,8 @@ void mousePressed () {
   if (gameOver == true && mouseX > 250 && mouseX < 450 && mouseY > 240 && mouseY < 295) {
 
     snakeHeadX = 210;
-    appleX = 210;
-    appleY = 150;
+    foodX = 200;
+    foodY = 150;
     snakeHeadY = 250;
     snakeLength = 1;
     direction = 0;
@@ -442,8 +440,8 @@ void keyPressed () {
   // Press R to restart the game
   if (screen == 1 && gameOver && (keyCode == 'R' || keyCode == 'r')) {
     snakeHeadX = 210;
-    appleX = 210;
-    appleY = 150;
+    foodX = 200;
+    foodY = 150;
     snakeHeadY = 250;
     snakeLength = 1;
     direction = 0;
